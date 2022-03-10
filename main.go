@@ -1,4 +1,3 @@
-// TODO: Draw paddles
 // TODO: Player movements
 // TODO:Paddle boundaries
 // TODO:Draw ball
@@ -53,9 +52,13 @@ func main() {
 			screen.Sync()
 			DrawState()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyUp {
+			if ev.Rune() == 'q' {
 				screen.Fini()
 				os.Exit(0)
+			} else if ev.Key() == tcell.KeyUp {
+				// TODO: paddle up
+			} else if ev.Key() == tcell.KeyDown {
+				// TODO: paddle down
 			}
 		}
 	}
