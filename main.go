@@ -15,14 +15,18 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func PrintScreen(screen tcell.Screen, row, col int, str string) {
-	for _, c := range str {
-		screen.SetContent(col, row, c, nil, tcell.StyleDefault)
-		col += 1
-	}
+const paddleSymbol = 0x2588
+const paddleSize = 4
+
+type Paddle struct {
+	row, col, width, heght int
 }
 
-func Print(screen tcell.Screen, row, col, width, height int, ch rune) {
+var screen tcell.Screen
+var Player1 *Paddle
+var Player2 *Paddle
+
+func Print(row, col, width, height int, ch rune) {
 	for r := 0; r < height; r++ {
 		for c := 0; c < width; c++ {
 			screen.SetContent(col+c, row+r, ch, nil, tcell.StyleDefault)
@@ -30,24 +34,24 @@ func Print(screen tcell.Screen, row, col, width, height int, ch rune) {
 	}
 }
 
-func displayHelloWorld(screen tcell.Screen) {
-	//w, h := screen.Size()
+func DrawState() {
 	screen.Clear()
-	//PrintScreen(screen, 2, 5, "Hello, World!")
-	Print(screen, 2, 0, 5, 10, '#')
+	Print(Player1.row, Player1.col, Player1.width, Player1.heght, paddleSymbol)
+	Print(Player2.row, Player2.col, Player2.width, Player2.heght, paddleSymbol)
 	screen.Show()
 }
 
 // This program just prints "Hello, World!".  Press ESC to exit.
 func main() {
-	screen := InitScreen()
-	displayHelloWorld(screen)
+	InitScreen()
+	InitGameState()
+	DrawState()
 
 	for {
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			screen.Sync()
-			displayHelloWorld(screen)
+			DrawState()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyUp {
 				screen.Fini()
@@ -57,10 +61,10 @@ func main() {
 	}
 }
 
-func InitScreen() tcell.Screen {
+func InitScreen() {
 	encoding.Register()
-
-	screen, err := tcell.NewScreen()
+	var err error
+	screen, err = tcell.NewScreen()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
@@ -75,5 +79,18 @@ func InitScreen() tcell.Screen {
 		Foreground(tcell.ColorMaroon)
 	screen.SetStyle(defStyle)
 
-	return screen
+}
+
+func InitGameState() {
+	w, h := screen.Size()
+	screen.Clear()
+	startPos := h/2 - paddleSize/2
+
+	Player1 = &Paddle{
+		row: startPos, col: 0, width: 1, heght: paddleSize,
+	}
+	Player2 = &Paddle{
+		row: startPos, col: w - 1, width: 1, heght: paddleSize,
+	}
+
 }
