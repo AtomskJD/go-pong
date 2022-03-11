@@ -1,4 +1,3 @@
-// TODO: Player movements
 // TODO:Paddle boundaries
 // TODO:Draw ball
 // todo:update ball movement
@@ -10,6 +9,7 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2/encoding"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -24,47 +24,34 @@ type Paddle struct {
 var screen tcell.Screen
 var Player1 *Paddle
 var Player2 *Paddle
-
-func Print(row, col, width, height int, ch rune) {
-	for r := 0; r < height; r++ {
-		for c := 0; c < width; c++ {
-			screen.SetContent(col+c, row+r, ch, nil, tcell.StyleDefault)
-		}
-	}
-}
-
-func DrawState() {
-	screen.Clear()
-	Print(Player1.row, Player1.col, Player1.width, Player1.heght, paddleSymbol)
-	Print(Player2.row, Player2.col, Player2.width, Player2.heght, paddleSymbol)
-	screen.Show()
-}
+var debugLog string
 
 // This program just prints "Hello, World!".  Press ESC to exit.
 func main() {
 	InitScreen()
 	InitGameState()
+	inputChan := InitUserInput()
 
+	cnt := 0
+	// MAIN LOOP
 	for {
-		DrawState()
-		switch ev := screen.PollEvent().(type) {
-		case *tcell.EventResize:
-			screen.Sync()
-			DrawState()
-		case *tcell.EventKey:
-			if ev.Rune() == 'q' {
-				screen.Fini()
-				os.Exit(0)
-			} else if ev.Rune() == 'w' {
-				Player1.row--
-			} else if ev.Rune() == 's' {
-				Player1.row++
-			} else if ev.Key() == tcell.KeyUp {
-				Player2.row--
-			} else if ev.Key() == tcell.KeyDown {
-				Player2.row++
-			}
+		key := ReadInput(inputChan)
+		if key == "Rune[q]" {
+			screen.Fini()
+			os.Exit(0)
+		} else if key == "Rune[w]" {
+			Player1.row--
+		} else if key == "Rune[s]" {
+			Player1.row++
+		} else if key == "Up" {
+			Player2.row--
+		} else if key == "Down" {
+			Player2.row++
 		}
+		DrawState()
+		time.Sleep(40 * time.Millisecond)
+		cnt++
+		debugLog = fmt.Sprintf("%d", cnt)
 	}
 }
 
@@ -99,5 +86,53 @@ func InitGameState() {
 	Player2 = &Paddle{
 		row: startPos, col: w - 1, width: 1, heght: paddleSize,
 	}
+}
 
+func InitUserInput() chan string {
+	inputChan := make(chan string)
+	go func() {
+		for {
+			switch ev := screen.PollEvent().(type) {
+			case *tcell.EventKey:
+				//debugLog = ev.Name()
+				inputChan <- ev.Name()
+			}
+		}
+	}()
+	return inputChan
+}
+
+func ReadInput(inputChan chan string) string {
+	var key string
+	select {
+	case key = <-inputChan:
+	default:
+		key = ""
+	}
+
+	return key
+}
+
+func Print(row, col, width, height int, ch rune) {
+	for r := 0; r < height; r++ {
+		for c := 0; c < width; c++ {
+			screen.SetContent(col+c, row+r, ch, nil, tcell.StyleDefault)
+		}
+	}
+}
+
+func PrintScreen(str string) {
+	col := 0
+	for _, r := range str {
+		screen.SetContent(col, 0, r, nil, tcell.StyleDefault)
+		col += 1
+	}
+}
+
+func DrawState() {
+	screen.Clear()
+	PrintScreen(debugLog)
+	Print(Player1.row, Player1.col, Player1.width, Player1.heght, paddleSymbol)
+	Print(Player2.row, Player2.col, Player2.width, Player2.heght, paddleSymbol)
+	screen.Show()
 }
