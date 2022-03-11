@@ -44,9 +44,9 @@ func DrawState() {
 func main() {
 	InitScreen()
 	InitGameState()
-	DrawState()
 
 	for {
+		DrawState()
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			screen.Sync()
@@ -55,10 +55,14 @@ func main() {
 			if ev.Rune() == 'q' {
 				screen.Fini()
 				os.Exit(0)
+			} else if ev.Rune() == 'w' {
+				Player1.row--
+			} else if ev.Rune() == 's' {
+				Player1.row++
 			} else if ev.Key() == tcell.KeyUp {
-				// TODO: paddle up
+				Player2.row--
 			} else if ev.Key() == tcell.KeyDown {
-				// TODO: paddle down
+				Player2.row++
 			}
 		}
 	}
