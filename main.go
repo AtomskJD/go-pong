@@ -1,4 +1,3 @@
-// TODO:Paddle boundaries
 // TODO:Draw ball
 // todo:update ball movement
 // todo: handle collisions
@@ -32,26 +31,17 @@ func main() {
 	InitGameState()
 	inputChan := InitUserInput()
 
-	cnt := 0
+	//cnt := 0
 	// MAIN LOOP
 	for {
 		key := ReadInput(inputChan)
-		if key == "Rune[q]" {
-			screen.Fini()
-			os.Exit(0)
-		} else if key == "Rune[w]" {
-			Player1.row--
-		} else if key == "Rune[s]" {
-			Player1.row++
-		} else if key == "Up" {
-			Player2.row--
-		} else if key == "Down" {
-			Player2.row++
-		}
+
+		HandleUserInput(key)
+
 		DrawState()
 		time.Sleep(40 * time.Millisecond)
-		cnt++
-		debugLog = fmt.Sprintf("%d", cnt)
+		//cnt++
+		//debugLog = fmt.Sprintf("%d", cnt)
 	}
 }
 
@@ -111,6 +101,23 @@ func ReadInput(inputChan chan string) string {
 	}
 
 	return key
+}
+
+func HandleUserInput(key string) {
+	_, height := screen.Size()
+
+	if key == "Rune[q]" {
+		screen.Fini()
+		os.Exit(0)
+	} else if key == "Rune[w]" && Player1.row > 0 {
+		Player1.row--
+	} else if key == "Rune[s]" && Player1.row+Player1.heght < height {
+		Player1.row++
+	} else if key == "Up" && Player2.row > 0 {
+		Player2.row--
+	} else if key == "Down" && Player2.row+Player2.heght < height {
+		Player2.row++
+	}
 }
 
 func Print(row, col, width, height int, ch rune) {
