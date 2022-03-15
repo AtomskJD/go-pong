@@ -1,4 +1,3 @@
-// todo: handle collisions
 // todo: handle GAMEOVERS
 package main
 
@@ -48,7 +47,8 @@ func main() {
 
 		time.Sleep(80 * time.Millisecond)
 		//cnt++
-		//debugLog = fmt.Sprintf("%d", cnt)
+		//debugLog = fmt.Sprintf("%d - %d", Ball.col+Ball.velCol, Player2.col)
+		//debugLog = fmt.Sprintf("%d - %d", Ball.row+Ball.velRow, Player2.row)
 	}
 }
 
@@ -166,7 +166,8 @@ func UpdateState() {
 	if CollidesWithWallH(Ball) {
 		Ball.velRow = -Ball.velRow
 	}
-	if CollidesWithWallV(Ball) {
+
+	if CollidesWithPlayer(Ball, Player1) || CollidesWithPlayer(Ball, Player2) {
 		Ball.velCol = -Ball.velCol
 	}
 }
@@ -189,4 +190,16 @@ func CollidesWithWallV(obj *GameObject) bool {
 	screenWidth, _ := screen.Size()
 	return obj.col+obj.velCol < 0 || obj.col+obj.velCol >= screenWidth
 
+}
+
+func CollidesWithPlayer(ball *GameObject, player *GameObject) bool {
+	var collidesOnColumn bool
+	if ball.col < player.col {
+		collidesOnColumn = ball.col+ball.velCol >= player.col
+	} else {
+		collidesOnColumn = ball.col+ball.velCol <= player.col
+	}
+	return collidesOnColumn &&
+		ball.row >= player.row &&
+		ball.row < player.row+player.height
 }
