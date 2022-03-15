@@ -14,10 +14,13 @@ import (
 const paddleSymbol = 0x2588
 const ballSymbol = 0x25CF
 const paddleSize = 4
+const initialBallVelocityRow = 1
+const initialBallVelocityCol = 2
 
 // merge sturc Ball with Palddle = gameobject
 type GameObject struct {
 	row, col, width, height int
+	velRow, velCol          int
 	symbol                  rune
 }
 
@@ -39,12 +42,12 @@ func main() {
 	//cnt := 0
 	// MAIN LOOP
 	for {
-		key := ReadInput(inputChan)
+		HandleUserInput(ReadInput((inputChan)))
 
-		HandleUserInput(key)
-
+		UpdateState()
 		DrawState()
-		time.Sleep(40 * time.Millisecond)
+
+		time.Sleep(80 * time.Millisecond)
 		//cnt++
 		//debugLog = fmt.Sprintf("%d", cnt)
 	}
@@ -77,15 +80,18 @@ func InitGameState() {
 
 	Player1 = &GameObject{
 		row: startPos, col: 0, width: 1, height: paddleSize,
+		velRow: 0, velCol: 0,
 		symbol: paddleSymbol,
 	}
 	Player2 = &GameObject{
 		row: startPos, col: w - 1, width: 1, height: paddleSize,
+		velRow: 0, velCol: 0,
 		symbol: paddleSymbol,
 	}
 
 	Ball = &GameObject{
 		row: h / 2, col: w / 2, height: 1, width: 1,
+		velRow: initialBallVelocityRow, velCol: initialBallVelocityCol,
 		symbol: ballSymbol,
 	}
 
@@ -152,6 +158,17 @@ func PrintScreen(str string) {
 	}
 }
 
+func UpdateState() {
+	for i := range gameObjects {
+		gameObjects[i].row += gameObjects[i].velRow
+		gameObjects[i].col += gameObjects[i].velCol
+	}
+
+	if CollidesWithWall(Ball) {
+		Ball.velRow = -Ball.velRow
+	}
+}
+
 func DrawState() {
 	screen.Clear()
 	PrintScreen(debugLog)
@@ -159,4 +176,11 @@ func DrawState() {
 		Print(obj.row, obj.col, obj.width, obj.height, obj.symbol)
 	}
 	screen.Show()
+}
+
+func CollidesWithWall(obj *GameObject) bool {
+	screenWidth, screenHeight := screen.Size()
+	_ = screenWidth // dummy
+	return obj.row+obj.velRow < 0 || obj.row+obj.velRow >= screenHeight
+
 }
