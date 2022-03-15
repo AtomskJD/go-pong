@@ -1,4 +1,3 @@
-// TODO:Draw ball
 // todo:update ball movement
 // todo: handle collisions
 // todo: handle GAMEOVERS
@@ -6,23 +5,29 @@ package main
 
 import (
 	"fmt"
+	"github.com/gdamore/tcell/v2"
 	"github.com/gdamore/tcell/v2/encoding"
 	"os"
 	"time"
-
-	"github.com/gdamore/tcell/v2"
 )
 
 const paddleSymbol = 0x2588
+const ballSymbol = 0x25CF
 const paddleSize = 4
 
-type Paddle struct {
-	row, col, width, heght int
+// merge sturc Ball with Palddle = gameobject
+type GameObject struct {
+	row, col, width, height int
+	symbol                  rune
 }
 
 var screen tcell.Screen
-var Player1 *Paddle
-var Player2 *Paddle
+var Player1 *GameObject
+var Player2 *GameObject
+var Ball *GameObject
+
+var gameObjects []*GameObject
+
 var debugLog string
 
 // This program just prints "Hello, World!".  Press ESC to exit.
@@ -70,11 +75,22 @@ func InitGameState() {
 	screen.Clear()
 	startPos := h/2 - paddleSize/2
 
-	Player1 = &Paddle{
-		row: startPos, col: 0, width: 1, heght: paddleSize,
+	Player1 = &GameObject{
+		row: startPos, col: 0, width: 1, height: paddleSize,
+		symbol: paddleSymbol,
 	}
-	Player2 = &Paddle{
-		row: startPos, col: w - 1, width: 1, heght: paddleSize,
+	Player2 = &GameObject{
+		row: startPos, col: w - 1, width: 1, height: paddleSize,
+		symbol: paddleSymbol,
+	}
+
+	Ball = &GameObject{
+		row: h / 2, col: w / 2, height: 1, width: 1,
+		symbol: ballSymbol,
+	}
+
+	gameObjects = []*GameObject{
+		Player1, Player2, Ball,
 	}
 }
 
@@ -111,11 +127,11 @@ func HandleUserInput(key string) {
 		os.Exit(0)
 	} else if key == "Rune[w]" && Player1.row > 0 {
 		Player1.row--
-	} else if key == "Rune[s]" && Player1.row+Player1.heght < height {
+	} else if key == "Rune[s]" && Player1.row+Player1.height < height {
 		Player1.row++
 	} else if key == "Up" && Player2.row > 0 {
 		Player2.row--
-	} else if key == "Down" && Player2.row+Player2.heght < height {
+	} else if key == "Down" && Player2.row+Player2.height < height {
 		Player2.row++
 	}
 }
@@ -139,7 +155,8 @@ func PrintScreen(str string) {
 func DrawState() {
 	screen.Clear()
 	PrintScreen(debugLog)
-	Print(Player1.row, Player1.col, Player1.width, Player1.heght, paddleSymbol)
-	Print(Player2.row, Player2.col, Player2.width, Player2.heght, paddleSymbol)
+	for _, obj := range gameObjects {
+		Print(obj.row, obj.col, obj.width, obj.height, obj.symbol)
+	}
 	screen.Show()
 }
