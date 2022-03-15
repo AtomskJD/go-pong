@@ -1,4 +1,3 @@
-// todo:update ball movement
 // todo: handle collisions
 // todo: handle GAMEOVERS
 package main
@@ -164,8 +163,11 @@ func UpdateState() {
 		gameObjects[i].col += gameObjects[i].velCol
 	}
 
-	if CollidesWithWall(Ball) {
+	if CollidesWithWallH(Ball) {
 		Ball.velRow = -Ball.velRow
+	}
+	if CollidesWithWallV(Ball) {
+		Ball.velCol = -Ball.velCol
 	}
 }
 
@@ -178,9 +180,13 @@ func DrawState() {
 	screen.Show()
 }
 
-func CollidesWithWall(obj *GameObject) bool {
-	screenWidth, screenHeight := screen.Size()
-	_ = screenWidth // dummy
+func CollidesWithWallH(obj *GameObject) bool {
+	_, screenHeight := screen.Size()
 	return obj.row+obj.velRow < 0 || obj.row+obj.velRow >= screenHeight
+
+}
+func CollidesWithWallV(obj *GameObject) bool {
+	screenWidth, _ := screen.Size()
+	return obj.col+obj.velCol < 0 || obj.col+obj.velCol >= screenWidth
 
 }
