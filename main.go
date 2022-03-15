@@ -1,4 +1,3 @@
-// todo: handle GAMEOVERS
 package main
 
 import (
@@ -39,7 +38,7 @@ func main() {
 
 	//cnt := 0
 	// MAIN LOOP
-	for {
+	for !IsGameOver() {
 		HandleUserInput(ReadInput((inputChan)))
 
 		UpdateState()
@@ -50,8 +49,29 @@ func main() {
 		//debugLog = fmt.Sprintf("%d - %d", Ball.col+Ball.velCol, Player2.col)
 		//debugLog = fmt.Sprintf("%d - %d", Ball.row+Ball.velRow, Player2.row)
 	}
+	winner := GetTheWinner()
+	screenWidth, screenHeight := screen.Size()
+	PrintStringCentered(screenHeight/2-1, screenWidth/2, "Game Over!")
+	PrintStringCentered(screenHeight/2, screenWidth/2, fmt.Sprintf("%s is winner", winner))
+	screen.Show()
+	time.Sleep(3 * time.Second)
+	screen.Fini()
 }
 
+func GetTheWinner() string {
+	screenWidth, _ := screen.Size()
+	if Ball.col < 0 {
+		return "Player 2"
+	} else if Ball.col >= screenWidth {
+		return "Player 1"
+	} else {
+		return ""
+	}
+}
+
+func IsGameOver() bool {
+	return GetTheWinner() != ""
+}
 func InitScreen() {
 	encoding.Register()
 	var err error
@@ -155,6 +175,16 @@ func PrintScreen(str string) {
 		screen.SetContent(col, 0, r, nil, tcell.StyleDefault)
 		col += 1
 	}
+}
+func PrintString(row, col int, str string) {
+	for _, r := range str {
+		screen.SetContent(col, row, r, nil, tcell.StyleDefault)
+		col += 1
+	}
+}
+func PrintStringCentered(row, col int, str string) {
+	col = col - len(str)/2
+	PrintString(row, col, str)
 }
 
 func UpdateState() {
